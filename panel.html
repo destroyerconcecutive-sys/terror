@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egg Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #panelOverlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 999999;
+        }
+
+        .painel {
+            position: relative;
+            width: 140px;
+            height: 160px;
+            border-radius: 16px;
+            border: 2px solid #3b82f6;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(13, 27, 61, 0.95), rgba(10, 10, 20, 0.98));
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.6), inset 0 0 20px rgba(59, 130, 246, 0.15);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px;
+            cursor: move;
+            user-select: none;
+        }
+
+        .eye-container {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 8px;
+        }
+
+        .eye {
+            width: 48px;
+            height: 22px;
+            background: #fff;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+        }
+
+        .eye::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(13, 27, 61, 0.95);
+            animation: blink-bottom 3s ease-in-out infinite;
+            z-index: 10;
+        }
+
+        .iris {
+            width: 14px;
+            height: 14px;
+            background: #3b82f6;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .pupil {
+            width: 8px;
+            height: 8px;
+            background: #000;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes blink-bottom {
+            0%, 85%, 100% { 
+                height: 0%;
+            }
+            90% { 
+                height: 100%;
+            }
+            92% { 
+                height: 0%;
+            }
+        }
+
+        .controls-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-on {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: 1px solid #60a5fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #fff;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            width: 50px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+        }
+
+        .btn-on:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+        }
+
+        .btn-on:active {
+            transform: scale(0.95);
+        }
+
+        .numero-wrapper {
+            width: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+            border-radius: 4px;
+            border: 1.5px solid #60a5fa;
+        }
+
+        .numero-box {
+            background: transparent;
+            border: none;
+            padding: 1px 2px;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            cursor: text;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 18px;
+            width: 100%;
+        }
+
+        .numero-box:focus {
+            outline: none;
+        }
+
+        .bolinhas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .bolinha {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        @keyframes queda {
+            from {
+                transform: translateY(-20px) translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(200px) translateX(0);
+                opacity: 0.4;
+            }
+        }
+
+        .status {
+            position: absolute;
+            bottom: 4px;
+            left: 5px;
+            right: 5px;
+            font-size: 9px;
+            color: #64dc78;
+            text-align: center;
+            font-family: Gotham, sans-serif;
+            height: 14px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .resize-corner {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(37, 99, 235, 0.4));
+            cursor: nwse-resize;
+            border-radius: 0 0 16px 0;
+            border-left: 1px solid rgba(59, 130, 246, 0.3);
+            border-top: 1px solid rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="panelOverlay">
+        <div class="painel" id="mainPanel">
+            <div class="bolinhas-container" id="bolinhasContainer"></div>
+            
+            <div class="eye-container">
+                <div class="eye">
+                    <div class="iris">
+                        <div class="pupil"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-row">
+                <button class="btn-on" id="btnOn">ON</button>
+                <div class="numero-wrapper">
+                    <input type="text" class="numero-box" id="numeroBox" value="100" maxlength="3">
+                </div>
+            </div>
+
+            <div class="status" id="status">Aguardando ovo...</div>
+            <div class="resize-corner" id="resizeCorner"></div>
+        </div>
+    </div>
+
+    <script>
+        const painel = document.getElementById('mainPanel');
+        const panelOverlay = document.getElementById('panelOverlay');
+        const btnOn = document.getElementById('btnOn');
+        const numeroBox = document.getElementById('numeroBox');
+        const status = document.getElementById('status');
+        const bolinhasContainer = document.getElementById('bolinhasContainer');
+        const resizeCorner = document.getElementById('resizeCorner');
+        const eyeContainer = document.querySelector('.eye-container');
+
+        let isDragging = false;
+        let isResizing = false;
+        let dragStartX, dragStartY;
+        let panelStartX, panelStartY;
+        let panelStartWidth, panelStartHeight;
+
+        // DRAG
+        eyeContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            panelStartX = panelOverlay.offsetLeft;
+            panelStartY = panelOverlay.offsetTop;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - dragStartX;
+                const deltaY = e.clientY - dragStartY;
+                panelOverlay.style.left = (panelStartX + deltaX) + 'px';
+                panelOverlay.style.top = (panelStartY + deltaY) + 'px';
+                panelOverlay.style.transform = 'none';
+            }
+            if (isResizing) {
+                const deltaX = e.clientX - dragStartX;
+                const deltaY = e.clientY - dragStartY;
+                const newWidth = Math.max(100, panelStartWidth + deltaX);
+                const newHeight = Math.max(120, panelStartHeight + deltaY);
+                painel.style.width = newWidth + 'px';
+                painel.style.height = newHeight + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            isResizing = false;
+        });
+
+        // RESIZE
+        resizeCorner.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            panelStartWidth = painel.offsetWidth;
+            panelStartHeight = painel.offsetHeight;
+        });
+
+        // BOLINHAS
+        function criarBolinha() {
+            const bolinha = document.createElement('div');
+            bolinha.className = 'bolinha';
+            const tamanho = Math.random() * 4 + 1.5;
+            const esquerda = Math.random() * 100;
+            const duracao = Math.random() * 3 + 4;
+
+            bolinha.style.width = tamanho + 'px';
+            bolinha.style.height = tamanho + 'px';
+            bolinha.style.left = esquerda + '%';
+            bolinha.style.backgroundColor = '#ffffff';
+            bolinha.style.animation = `queda ${duracao}s linear forwards`;
+            bolinha.style.top = '-30px';
+
+            bolinhasContainer.appendChild(bolinha);
+
+            setTimeout(() => {
+                bolinha.remove();
+            }, duracao * 1000);
+        }
+
+        setInterval(() => {
+            criarBolinha();
+        }, 150);
+
+        // BOTÃO ON
+        btnOn.addEventListener('click', () => {
+            const isOn = btnOn.textContent === 'ON';
+            btnOn.textContent = isOn ? 'OFF' : 'ON';
+            btnOn.style.background = isOn ? 'linear-gradient(135deg, #be3c3c, #be3c3c)' : 'linear-gradient(135deg, #3b82f6, #2563eb)';
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => criarBolinha(), i * 50);
+            }
+        });
+
+        // STATUS
+        function setStatus(text, color = '#64dc78') {
+            status.textContent = text;
+            status.style.color = color;
+        }
+
+        // INPUT
+        numeroBox.addEventListener('change', () => {
+            const num = parseInt(numeroBox.value);
+            if (!isNaN(num) && num >= 0) {
+                numeroBox.value = num;
+                setStatus(`Tempo = ${num}s`, '#96c5ff');
+            } else {
+                numeroBox.value = '100';
+            }
+        });
+    </script>
+</body>
+</html>
